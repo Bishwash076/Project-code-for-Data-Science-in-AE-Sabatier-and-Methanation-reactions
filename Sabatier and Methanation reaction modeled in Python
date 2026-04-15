@@ -1,0 +1,106 @@
+import sys
+
+def main():
+    print("Industrial CO2 Neutralization Simulator (H2 & CO2 in kg/h)")
+    print("==========================================================\n")
+
+    print("Reactor configuration (realistic industrial conditions):")
+    print(" - Inlet-to-surface distance: 10 cm")
+    print(" - Inlet mass flux: ≈ 0.06 kg m^-2 s^-1")
+    print(" - Catalytic surface temperature: 623 K (350 °C)")
+    print(" - Operating pressure: 20 bar")
+    print(" - Typical space velocity: 6000–20000 h^-1")
+    print(" - Conversion efficiency: 90 %\n")
+
+    try:
+        h2_feed_kgh = float(input("Enter H2 feed rate (kg/h): "))
+        co2_feed_kgh = float(input("Enter CO2 feed rate (kg/h): "))
+
+        if h2_feed_kgh < 0 or co2_feed_kgh < 0:
+            print("Error: Feed rates must be non-negative.")
+            sys.exit(1)
+
+    except ValueError:
+        print("Error: Please enter valid numeric values.")
+        sys.exit(1)
+
+    # Molar masses (kg/mol)
+    MW_H2 = 0.002016
+    MW_CO2 = 0.04401
+
+    # Convert to molar flow
+    h2_mol_h = h2_feed_kgh / MW_H2
+    co2_mol_h = co2_feed_kgh / MW_CO2
+
+    print(f"\nH2 feed: {h2_mol_h:,.2f} mol/h")
+    print(f"CO2 feed: {co2_mol_h:,.2f} mol/h")
+
+    efficiency = 0.90
+
+    # =========================
+    # REACTION 1: SABATIER
+    # =========================
+    stoich_1 = 4.0
+    product_name_1 = "CH4"
+    product_MW_1 = 0.01604
+    water_coeff_1 = 2.0
+
+    max_co2_1 = h2_mol_h / stoich_1
+    co2_reacted_1 = min(co2_mol_h, max_co2_1) * efficiency
+
+    h2_used_1 = co2_reacted_1 * stoich_1
+    excess_h2_1 = h2_mol_h - h2_used_1
+    excess_co2_1 = co2_mol_h - co2_reacted_1
+
+    product_1 = co2_reacted_1
+    water_1 = co2_reacted_1 * water_coeff_1
+
+    # =========================
+    # REACTION 2: METHANOL
+    # =========================
+    stoich_2 = 3.0
+    product_name_2 = "CH3OH"
+    product_MW_2 = 0.03204
+    water_coeff_2 = 1.0
+
+    max_co2_2 = h2_mol_h / stoich_2
+    co2_reacted_2 = min(co2_mol_h, max_co2_2) * efficiency
+
+    h2_used_2 = co2_reacted_2 * stoich_2
+    excess_h2_2 = h2_mol_h - h2_used_2
+    excess_co2_2 = co2_mol_h - co2_reacted_2
+
+    product_2 = co2_reacted_2
+    water_2 = co2_reacted_2 * water_coeff_2
+
+    # =========================
+    # RESULTS
+    # =========================
+    print("\n" + "=" * 80)
+    print("REACTION 1: SABATIER (CO2 → CH4)")
+    print("=" * 80)
+
+    print(f"CO2 reacted: {co2_reacted_1 * MW_CO2:.3f} kg/h")
+    print(f"H2 used: {h2_used_1 * MW_H2:.3f} kg/h")
+    print(f"CH4 produced: {product_1 * product_MW_1:.3f} kg/h")
+    print(f"H2O produced: {water_1 * 0.01802:.3f} kg/h")
+    print(f"Excess H2: {excess_h2_1 * MW_H2:.3f} kg/h")
+    print(f"Excess CO2: {excess_co2_1 * MW_CO2:.3f} kg/h")
+
+    print("\n" + "=" * 80)
+    print("REACTION 2: METHANOL SYNTHESIS (CO2 → CH3OH)")
+    print("=" * 80)
+
+    print(f"CO2 reacted: {co2_reacted_2 * MW_CO2:.3f} kg/h")
+    print(f"H2 used: {h2_used_2 * MW_H2:.3f} kg/h")
+    print(f"CH3OH produced: {product_2 * product_MW_2:.3f} kg/h")
+    print(f"H2O produced: {water_2 * 0.01802:.3f} kg/h")
+    print(f"Excess H2: {excess_h2_2 * MW_H2:.3f} kg/h")
+    print(f"Excess CO2: {excess_co2_2 * MW_CO2:.3f} kg/h")
+
+    print("\nNOTE:")
+    print("Both reactions are simulated independently using identical feed conditions.")
+    print("No shared reactor coupling or competition is assumed.")
+
+if __name__ == "__main__":
+    main()
